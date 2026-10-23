@@ -1,0 +1,15 @@
+# Temporales y pruebas
+extracted_test/
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/

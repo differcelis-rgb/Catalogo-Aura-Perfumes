@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AURA · Panel de Administración de Fragancias</title>
+  <link rel="stylesheet" href="css/styles.css?v=4.0">
+  <style>
+    /* Estilos específicos para el panel administrativo */
+    .admin-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 5rem;
+    }
+    .admin-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      margin-bottom: 2rem;
+    }
+    .admin-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .admin-stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .admin-stat-val {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+    .admin-stat-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+    .admin-controls-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .admin-table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow-x: auto;
+    }
+    table.admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    table.admin-table th {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 1rem;
+      font-weight: 700;
+      color: var(--gold-primary);
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+    table.admin-table td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: middle;
+    }
+    table.admin-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .admin-img-thumb {
+      width: 90px;
+      aspect-ratio: 2.35 / 1;
+      object-fit: contain;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+      display: block;
+    }
+    .btn-edit, .btn-delete {
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all var(--transition-fast);
+    }
+    .btn-edit {
+      background: rgba(197, 158, 89, 0.15);
+      color: var(--gold-light);
+      border-color: var(--border-subtle);
+    }
+    .btn-edit:hover {
+      background: var(--gold-gradient);
+      color: #0c0c0c;
+    }
+    .btn-delete {
+      background: rgba(239, 83, 80, 0.15);
+      color: #ff8a80;
+      border-color: rgba(239, 83, 80, 0.3);
+      margin-left: 0.35rem;
+    }
+    .btn-delete:hover {
+      background: #e53935;
+      color: #fff;
+    }
+    /* Formulario en modal */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
+    }
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .form-control {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      padding: 0.65rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 0 2px rgba(197, 158, 89, 0.2);
+    }
+    .img-upload-box {
+      border: 2px dashed var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.2);
+      transition: all var(--transition-fast);
+    }
+    .img-upload-box:hover {
+      border-color: var(--gold-primary);
+      background: rgba(197, 158, 89, 0.08);
+    }
+    .preview-box {
+      margin-top: 0.75rem;
+      max-height: 140px;
+      overflow: hidden;
+      border-radius: 8px;
+      display: none;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border-subtle);
+    }
+    .preview-box img {
+      width: 100%;
+      height: 140px;
+      object-fit: contain;
+    }
+    /* Toast feedback */
+    .toast-msg {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      background: #181510;
+      color: var(--gold-light);
+      padding: 0.85rem 1.4rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--gold-primary);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8), var(--gold-glow);
+      font-size: 0.9rem;
+      font-weight: 600;
+      z-index: 200;
+      display: none;
+      align-items: center;
+      gap: 0.6rem;
+      animation: fadeIn 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow" aria-hidden="true"></div>
+
+  <!-- Contenedor Principal Admin -->
+  <main class="admin-container">
+    
+    <!-- Barra Superior -->
+    <header class="admin-header-bar">
+      <div style="display:flex; align-items:center; gap:1.1rem;">
+        <img src="assets/brand/aura_logo.jpeg" alt="Aura Logo" style="width:56px; height:56px; border-radius:14px; border:1px solid var(--border-subtle); object-fit:cover; box-shadow:var(--gold-glow); flex-shrink:0;">
+        <div>
+          <div style="font-size:0.75rem; color:var(--gold-primary); font-weight:700; text-transform:uppercase; letter-spacing:0.1em;">
+            Panel de Control Oficial
+          </div>
+          <h1 style="font-size:1.6rem; font-weight:800; margin:0.2rem 0;">AURA · Gestión de Fragancias</h1>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin:0;">
+            Agrega nuevos perfumes, actualiza precios, notas o fotos sin tocar código.
+          </p>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:0.65rem; align-items:center; flex-wrap:wrap;">
+        <a href="index.html" class="btn-secondary" style="font-size:0.85rem; padding:0.6rem 1.2rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          <span>Ver Catálogo Público</span>
+        </a>
+        <button type="button" class="btn-primary" onclick="openAddModal()" style="font-size:0.85rem; padding:0.6rem 1.4rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          <span>+ Agregar Nueva Fragancia</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Resumen de Métricas -->
+    <div class="admin-stats-grid">
+      <div class="admin-stat-card">
+        <div class="admin-stat-val" id="statTotal">59</div>
+        <div class="admin-stat-label">Total Fragancias</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-val" id="statDama">38</div>
+        <div class="admin-stat-label">Colección Dama</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-val" id="statCaballero">21</div>
+        <div class="admin-stat-label">Colección Caballero</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-val" id="statUnisex">10</div>
+        <div class="admin-stat-label">Colección Unisex</div>
+      </div>
+    </div>
+
+    <!-- Barra de Búsqueda y Filtros de la Tabla -->
+    <div class="admin-controls-row">
+      <div style="display:flex; gap:0.4rem; overflow-x:auto;">
+        <button type="button" class="family-chip active" data-filter="all" onclick="filterAdminTable('all')">Todas</button>
+        <button type="button" class="family-chip" data-filter="dama" onclick="filterAdminTable('dama')">Dama</button>
+        <button type="button" class="family-chip" data-filter="caballero" onclick="filterAdminTable('caballero')">Caballero</button>
+        <button type="button" class="family-chip" data-filter="unisex" onclick="filterAdminTable('unisex')">Unisex</button>
+      </div>
+
+      <div style="position:relative; width:min(340px, 100%);">
+        <input type="text" id="adminSearchInput" class="form-control" style="width:100%; border-radius:var(--radius-full); padding-left:2.2rem;" placeholder="Buscar perfume por nombre...">
+        <svg style="position:absolute; left:0.8rem; top:50%; transform:translateY(-50%); width:16px; height:16px; fill:var(--text-muted);" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      </div>
+    </div>
+
+    <!-- Tabla de Fragancias -->
+    <div class="admin-table-container">
+      <table class="admin-table" id="adminPerfumesTable">
+        <thead>
+          <tr>
+            <th>Imagen</th>
+            <th>Nombre Aura</th>
+            <th>Inspiración</th>
+            <th>Línea</th>
+            <th>Subcategoría</th>
+            <th>Notas Olfativas</th>
+            <th>Precios</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="adminTableBody">
+          <!-- Dinámico -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Botón de respaldo/exportar -->
+    <div style="margin-top:1.5rem; text-align:right;">
+      <button type="button" class="btn-secondary" onclick="exportDataJS()" style="font-size:0.85rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+        <span>📥 Descargar Copia de Respaldo (perfumes-data.js)</span>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- ========================================================
+       MODAL: FORMULARIO AGREGAR / EDITAR FRAGANCIA
+       ======================================================== -->
+  <div class="modal-overlay" id="fragranceModal">
+    <div class="modal-content" style="max-width: 680px; padding: 2rem;">
+      <button type="button" class="modal-close-btn" onclick="closeFragranceModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+
+      <h2 id="modalTitle" style="font-size:1.45rem; font-weight:800; margin-bottom:1.25rem;">+ Agregar Nueva Fragancia</h2>
+
+      <form id="fragranceForm" onsubmit="handleFormSubmit(event)">
+        <input type="hidden" id="editPerfumeId" value="">
+
+        <div class="form-grid">
+          <!-- Nombre Aura -->
+          <div class="form-group">
+            <label for="fName">Nombre Aura *</label>
+            <input type="text" id="fName" class="form-control" placeholder="Ej. Oasis, Santorini, Éxtasis" required>
+          </div>
+
+          <!-- Inspiración -->
+          <div class="form-group">
+            <label for="fInspiration">Inspirado en (Referencia) *</label>
+            <input type="text" id="fInspiration" class="form-control" placeholder="Ej. Baccarat Rouge 540 · MFK" required>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <!-- Género -->
+          <div class="form-group">
+            <label for="fGender">Línea Principal *</label>
+            <select id="fGender" class="form-control" onchange="updateSubcatOptions()" required>
+              <option value="dama">🌸 Dama</option>
+              <option value="caballero">🎩 Caballero</option>
+              <option value="unisex">✨ Unisex</option>
+            </select>
+          </div>
+
+          <!-- Subcategoría -->
+          <div class="form-group">
+            <label for="fSubcategory">Subcategoría *</label>
+            <select id="fSubcategory" class="form-control" required>
+              <!-- Dinámico -->
+            </select>
+          </div>
+        </div>
+
+        <!-- También marcar como Unisex -->
+        <div style="margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+          <input type="checkbox" id="fIsUnisex" style="width:16px; height:16px; accent-color:var(--gold-primary);">
+          <label for="fIsUnisex" style="font-size:0.85rem; cursor:pointer;">También mostrar esta fragancia en la sección <strong>Unisex</strong></label>
+        </div>
+
+        <!-- Notas Olfativas -->
+        <div class="form-group">
+          <label for="fNotes">Notas Olfativas (separadas por coma) *</label>
+          <input type="text" id="fNotes" class="form-control" placeholder="Ej. ámbar, azafrán, cedro, jazmín, dulce" required>
+          <small style="color:var(--text-muted); font-size:0.75rem;">Ejemplo: caramelo, avainillado, cítrico, amaderado, flores blancas</small>
+        </div>
+
+        <!-- Frase corta / Tagline -->
+        <div class="form-group">
+          <label for="fTagline">Frase corta descriptiva *</label>
+          <input type="text" id="fTagline" class="form-control" placeholder="Ej. Magnetismo resplandeciente con acordes cristalinos de ámbar y madera" required>
+        </div>
+
+        <!-- Foto de la Fragancia -->
+        <div class="form-group">
+          <label>Foto de la Fragancia (Formato Panorámico) *</label>
+          <div class="img-upload-box" onclick="document.getElementById('fImageFile').click()">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--gold-primary)" style="margin-bottom:0.4rem;"><path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"/></svg>
+            <div style="font-size:0.85rem; font-weight:600;">Haz clic para seleccionar una foto de tu equipo</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Soporta JPG, PNG, WEBP (Se recomienda tamaño apaisado)</div>
+            <input type="file" id="fImageFile" accept="image/*" style="display:none;" onchange="handleImagePicked(event)">
+          </div>
+
+          <div class="preview-box" id="imgPreviewBox">
+            <img id="imgPreviewEl" src="" alt="Vista previa">
+          </div>
+          <input type="hidden" id="fImageBase64" value="">
+          <input type="hidden" id="fExistingImagePath" value="">
+        </div>
+
+        <!-- Precios -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Precio 10 ml</label>
+            <input type="number" id="fPrice10" class="form-control" value="10000">
+          </div>
+          <div class="form-group">
+            <label>Precio 30 ml</label>
+            <input type="number" id="fPrice30" class="form-control" value="22000">
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Precio 50 ml</label>
+            <input type="number" id="fPrice50" class="form-control" value="35000">
+          </div>
+          <div class="form-group">
+            <label>Precio 100 ml</label>
+            <input type="number" id="fPrice100" class="form-control" value="50000">
+          </div>
+        </div>
+
+        <div class="form-group" style="justify-content:center;">
+          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; cursor:pointer;">
+            <input type="checkbox" id="fPopular" style="width:18px; height:18px; accent-color:var(--gold-primary);">
+            <span>Marcar como <strong>★ Destacado</strong></span>
+          </label>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.5rem; border-top:1px solid var(--border-subtle); padding-top:1.25rem;">
+          <button type="button" class="btn-secondary" onclick="closeFragranceModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" id="btnSubmitForm">Guardar en el Catálogo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notificación -->
+  <div class="toast-msg" id="toastMsg">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    <span id="toastText">Operación realizada con éxito</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/perfumes-data.js?v=4.2"></script>
+  <script>
+    let perfumesList = typeof PERFUMES_DATA !== 'undefined' ? [...PERFUMES_DATA] : [];
+    let activeFilter = 'all';
+
+    const subcatMap = {
+      dama: ['Dulces - Gourmand', 'Florales', 'Frutales', 'Cítricos - Frescos', 'Atalcados'],
+      caballero: ['Amaderados & Elegantes', 'Frescos & Acuáticos', 'Cítricos & Enérgicos', 'Gourmand Nocturnos'],
+      unisex: ['Aromas Compartidos', 'Perfumería Nicho', 'Frescura Limpia', 'Orientales Suaves']
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderTable();
+      updateStats();
+      updateSubcatOptions();
+
+      document.getElementById('adminSearchInput').addEventListener('input', (e) => {
+        renderTable(e.target.value);
+      });
+    });
+
+    function updateStats() {
+      document.getElementById('statTotal').textContent = perfumesList.length;
+      document.getElementById('statDama').textContent = perfumesList.filter(p => p.gender === 'dama').length;
+      document.getElementById('statCaballero').textContent = perfumesList.filter(p => p.gender === 'caballero').length;
+      document.getElementById('statUnisex').textContent = perfumesList.filter(p => p.is_unisex || p.genders.includes('unisex')).length;
+    }
+
+    function filterAdminTable(filter) {
+      activeFilter = filter;
+      document.querySelectorAll('.family-chip').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+      renderTable();
+    }
+
+    function renderTable(searchQuery = '') {
+      const tbody = document.getElementById('adminTableBody');
+      if (!tbody) return;
+
+      let list = [...perfumesList];
+
+      if (activeFilter !== 'all') {
+        if (activeFilter === 'unisex') {
+          list = list.filter(p => p.is_unisex || p.genders.includes('unisex'));
+        } else {
+          list = list.filter(p => p.gender === activeFilter);
+        }
+      }
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        list = list.filter(p => 
+          p.name.toLowerCase().includes(q) || 
+          p.inspiration.toLowerCase().includes(q) || 
+          p.subcategory.toLowerCase().includes(q)
+        );
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:3rem; color:var(--text-muted);">No se encontraron fragancias</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(p => `
+        <tr>
+          <td><img src="${p.image}" class="admin-img-thumb" alt="${p.name}"></td>
+          <td><strong>${p.name}</strong> ${p.popular ? '<span style="color:var(--gold-primary); font-size:0.75rem;">★</span>' : ''}</td>
+          <td style="color:var(--gold-primary);">${p.inspiration}</td>
+          <td><span style="text-transform:capitalize;">${p.gender}</span></td>
+          <td><span class="family-chip" style="font-size:0.72rem; padding:0.2rem 0.5rem;">${p.subcategory}</span></td>
+          <td><div style="max-width:240px; font-size:0.75rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.notes.join(', ')}</div></td>
+          <td><span style="font-weight:700; color:var(--gold-light);">$ ${(p.prices['30ml'] || 22000).toLocaleString('es-CO')}</span></td>
+          <td style="white-space:nowrap;">
+            <button type="button" class="btn-edit" onclick="openEditModal('${p.id}')">Editar</button>
+            <button type="button" class="btn-delete" onclick="deletePerfume('${p.id}')">Eliminar</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateSubcatOptions() {
+      const gender = document.getElementById('fGender').value;
+      const subcatSelect = document.getElementById('fSubcategory');
+      const options = subcatMap[gender] || subcatMap.dama;
+      subcatSelect.innerHTML = options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+    }
+
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = '+ Agregar Nueva Fragancia';
+      document.getElementById('fragranceForm').reset();
+      document.getElementById('editPerfumeId').value = '';
+      document.getElementById('fImageBase64').value = '';
+      document.getElementById('fExistingImagePath').value = '';
+      document.getElementById('imgPreviewBox').style.display = 'none';
+      document.getElementById('fPrice10').value = '10000';
+      document.getElementById('fPrice30').value = '22000';
+      document.getElementById('fPrice50').value = '35000';
+      document.getElementById('fPrice100').value = '50000';
+      updateSubcatOptions();
+
+      document.getElementById('fragranceModal').classList.add('open');
+    }
+
+    function openEditModal(perfumeId) {
+      const p = perfumesList.find(x => x.id === perfumeId);
+      if (!p) return;
+
+      document.getElementById('modalTitle').textContent = `Editar: ${p.name}`;
+      document.getElementById('editPerfumeId').value = p.id;
+      document.getElementById('fName').value = p.name;
+      document.getElementById('fInspiration').value = p.inspiration;
+      document.getElementById('fGender').value = p.gender;
+      updateSubcatOptions();
+      document.getElementById('fSubcategory').value = p.subcategory;
+      document.getElementById('fIsUnisex').checked = p.is_unisex || p.genders.includes('unisex');
+      document.getElementById('fNotes').value = p.notes.join(', ');
+      document.getElementById('fTagline').value = p.tagline || '';
+      document.getElementById('fPrice10').value = p.prices['10ml'] || 10000;
+      document.getElementById('fPrice30').value = p.prices['30ml'] || 22000;
+      document.getElementById('fPrice50').value = p.prices['50ml'] || 35000;
+      document.getElementById('fPrice100').value = p.prices['100ml'] || 50000;
+      document.getElementById('fPopular').checked = !!p.popular;
+      
+      document.getElementById('fExistingImagePath').value = p.image;
+      document.getElementById('fImageBase64').value = '';
+      const previewBox = document.getElementById('imgPreviewBox');
+      const previewImg = document.getElementById('imgPreviewEl');
+      previewImg.src = p.image;
+      previewBox.style.display = 'block';
+
+      document.getElementById('fragranceModal').classList.add('open');
+    }
+
+    function closeFragranceModal() {
+      document.getElementById('fragranceModal').classList.remove('open');
+    }
+
+    function handleImagePicked(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const b64 = evt.target.result;
+        document.getElementById('fImageBase64').value = b64;
+        const previewBox = document.getElementById('imgPreviewBox');
+        const previewImg = document.getElementById('imgPreviewEl');
+        previewImg.src = b64;
+        previewBox.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editPerfumeId').value.trim();
+      const name = document.getElementById('fName').value.trim();
+      const inspiration = document.getElementById('fInspiration').value.trim();
+      const gender = document.getElementById('fGender').value;
+      const subcategory = document.getElementById('fSubcategory').value;
+      const isUnisex = document.getElementById('fIsUnisex').checked;
+      const notesRaw = document.getElementById('fNotes').value;
+      const tagline = document.getElementById('fTagline').value.trim();
+      const popular = document.getElementById('fPopular').checked;
+      const price10 = parseInt(document.getElementById('fPrice10').value) || 10000;
+      const price30 = parseInt(document.getElementById('fPrice30').value) || 22000;
+      const price50 = parseInt(document.getElementById('fPrice50').value) || 35000;
+      const price100 = parseInt(document.getElementById('fPrice100').value) || 50000;
+      
+      const imgB64 = document.getElementById('fImageBase64').value;
+      const existingImg = document.getElementById('fExistingImagePath').value;
+
+      if (!editId && !imgB64) {
+        alert('Por favor selecciona una foto para la fragancia.');
+        return;
+      }
+
+      const perfumeId = editId || slugify(name);
+      let imgPath = existingImg || `assets/perfumes/${perfumeId}.jpg`;
+
+      // Upload image to server if new image picked
+      if (imgB64) {
+        try {
+          const resp = await fetch('/api/upload-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: perfumeId, image_base64: imgB64 })
+          });
+          const res = await resp.json();
+          if (res.success) {
+            imgPath = res.path;
+          }
+        } catch (err) {
+          console.warn('Servidor local no disponible, guardando ruta local');
+        }
+      }
+
+      const notes = notesRaw.split(',').map(n => n.trim().toLowerCase()).filter(n => n.length > 0);
+      const genders = [gender];
+      if (isUnisex && !genders.includes('unisex')) genders.push('unisex');
+
+      const perfumeObj = {
+        id: perfumeId,
+        name: name,
+        inspiration: inspiration,
+        gender: gender,
+        genders: genders,
+        category: subcategory,
+        subcategory: subcategory,
+        family: slugify(subcategory.split(' ')[0]),
+        notes: notes,
+        tagline: tagline,
+        popular: popular,
+        image: imgPath,
+        prices: {
+          '10ml': price10,
+          '30ml': price30,
+          '50ml': price50,
+          '100ml': price100
+        },
+        is_unisex: isUnisex
+      };
+
+      if (editId) {
+        const idx = perfumesList.findIndex(p => p.id === editId);
+        if (idx > -1) perfumesList[idx] = perfumeObj;
+      } else {
+        perfumesList.unshift(perfumeObj); // Add to top
+      }
+
+      // Save to server
+      try {
+        await fetch('/api/save-perfumes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ perfumes: perfumesList })
+        });
+      } catch (err) {
+        console.warn('No se pudo guardar automáticamente en el servidor.');
+      }
+
+      closeFragranceModal();
+      renderTable();
+      updateStats();
+      showToast(editId ? `¡Fragancia "${name}" actualizada con éxito!` : `¡Fragancia "${name}" agregada al catálogo!`);
+    }
+
+    async function deletePerfume(perfumeId) {
+      const p = perfumesList.find(x => x.id === perfumeId);
+      if (!p) return;
+      if (!confirm(`¿Estás seguro de que deseas eliminar "${p.name}" del catálogo?`)) return;
+
+      perfumesList = perfumesList.filter(x => x.id !== perfumeId);
+
+      try {
+        await fetch('/api/save-perfumes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ perfumes: perfumesList })
+        });
+      } catch (err) {
+        console.warn('Error al sincronizar eliminación con el servidor');
+      }
+
+      renderTable();
+      updateStats();
+      showToast(`Fragancia "${p.name}" eliminada.`);
+    }
+
+    function exportDataJS() {
+      const content = `// Catálogo Oficial Aura - Base de datos sincronizada\nconst PERFUMES_DATA = ${JSON.stringify(perfumesList, null, 2)};\n`;
+      const blob = new Blob([content], { type: 'application/javascript;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'perfumes-data.js';
+      a.click();
+      showToast('Descargando archivo perfumes-data.js...');
+    }
+
+    function showToast(text) {
+      const toast = document.getElementById('toastMsg');
+      document.getElementById('toastText').textContent = text;
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    function slugify(text) {
+      return text.toString().toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+    }
+  </script>
+</body>
+</html>
